@@ -1,4 +1,4 @@
-defprotocol Schematic.Unification do
+defprotocol SchematicV.Unification do
   @moduledoc false
   @fallback_to_any true
   def unify(schematic, value, direction)
@@ -6,7 +6,7 @@ defprotocol Schematic.Unification do
   def kind(schematic)
 end
 
-defimpl Schematic.Unification, for: Schematic do
+defimpl SchematicV.Unification, for: SchematicV do
   def unify(schematic, input, direction) do
     schematic.unify.(input, direction)
   end
@@ -18,7 +18,7 @@ defimpl Schematic.Unification, for: Schematic do
   def kind(%{kind: kind}), do: kind
 end
 
-defimpl Schematic.Unification, for: Any do
+defimpl SchematicV.Unification, for: Any do
   def unify(schematic, input, _ \\ nil)
 
   def unify(%schematic_mod{}, %input_mod{} = input, _) do

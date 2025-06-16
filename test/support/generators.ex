@@ -1,4 +1,4 @@
-defmodule SchematicTest.Generators do
+defmodule SchematicVTest.Generators do
   @moduledoc """
   `StreamData` generators.
   """
@@ -16,16 +16,16 @@ defmodule SchematicTest.Generators do
   The generated data will have up to 9 layers of nesting, including the leaf nodes.
 
   The matching schematic may be significantly less complicated, as there is a chance that
-  a deeply nested map is covered by a more general schematic like `Schematic.map()`. A matching
+  a deeply nested map is covered by a more general schematic like `SchematicV.map()`. A matching
   schematic may also be more permissive, allowing unification for more than the given datum,
-  such as a datum of `13` generating a schematic like `Schematic.oneof([Schematic.int(), Schematic.str()])`.
+  such as a datum of `13` generating a schematic like `SchematicV.oneof([SchematicV.int(), SchematicV.str()])`.
 
 
   ## Options
 
-  * `:using` - a list of `Schematic.kind` values that determines the data types that will be generated. See the `Schematic` module for available `kind`s. Defaults to `[]`.
+  * `:using` - a list of `SchematicV.kind` values that determines the data types that will be generated. See the `SchematicV` module for available `kind`s. Defaults to `[]`.
      * e.g. `["null", "integer", "boolean"]`
-  * `:excluding` - a list of `Schematic.kind` values that determines the data types that will not be generated. See the `Schematic` module for available `kind`s. This option is mutually exclusive with `:using`. Defaults to `[]`.
+  * `:excluding` - a list of `SchematicV.kind` values that determines the data types that will not be generated. See the `SchematicV` module for available `kind`s. This option is mutually exclusive with `:using`. Defaults to `[]`.
      * e.g. `["null", "integer", "boolean"]`
   """
   def schematic_and_data(opts \\ []) do
@@ -92,58 +92,58 @@ defmodule SchematicTest.Generators do
 
   defp schematic_from_data(data) when is_integer(data) do
     StreamData.member_of([
-      Schematic.int(),
+      SchematicV.int(),
       data,
-      Schematic.oneof([Schematic.int(), simple_schematic() |> Enum.fetch!(1)]),
-      Schematic.oneof([data, simple_schematic() |> Enum.fetch!(1)])
+      SchematicV.oneof([SchematicV.int(), simple_schematic() |> Enum.fetch!(1)]),
+      SchematicV.oneof([data, simple_schematic() |> Enum.fetch!(1)])
     ])
   end
 
   defp schematic_from_data(data) when is_atom(data) do
     StreamData.member_of([
       data,
-      Schematic.oneof([data, simple_schematic() |> Enum.fetch!(1)])
+      SchematicV.oneof([data, simple_schematic() |> Enum.fetch!(1)])
     ])
   end
 
   defp schematic_from_data(data) when is_float(data) do
     StreamData.member_of([
-      Schematic.float(),
+      SchematicV.float(),
       data,
-      Schematic.oneof([Schematic.float(), simple_schematic() |> Enum.fetch!(1)]),
-      Schematic.oneof([data, simple_schematic() |> Enum.fetch!(1)])
+      SchematicV.oneof([SchematicV.float(), simple_schematic() |> Enum.fetch!(1)]),
+      SchematicV.oneof([data, simple_schematic() |> Enum.fetch!(1)])
     ])
   end
 
   defp schematic_from_data(data) when is_binary(data) do
     StreamData.member_of([
-      Schematic.str(),
+      SchematicV.str(),
       data,
-      Schematic.oneof([Schematic.str(), simple_schematic() |> Enum.fetch!(1)]),
-      Schematic.oneof([data, simple_schematic() |> Enum.fetch!(1)])
+      SchematicV.oneof([SchematicV.str(), simple_schematic() |> Enum.fetch!(1)]),
+      SchematicV.oneof([data, simple_schematic() |> Enum.fetch!(1)])
     ])
   end
 
   defp schematic_from_data(data) when is_boolean(data) do
     StreamData.member_of([
-      Schematic.bool(),
+      SchematicV.bool(),
       data,
-      Schematic.oneof([Schematic.bool(), simple_schematic() |> Enum.fetch!(1)]),
-      Schematic.oneof([data, simple_schematic() |> Enum.fetch!(1)])
+      SchematicV.oneof([SchematicV.bool(), simple_schematic() |> Enum.fetch!(1)]),
+      SchematicV.oneof([data, simple_schematic() |> Enum.fetch!(1)])
     ])
   end
 
   defp schematic_from_data(data) when is_nil(data) do
     StreamData.member_of([
       nil,
-      Schematic.nullable(simple_schematic() |> Enum.fetch!(1))
+      SchematicV.nullable(simple_schematic() |> Enum.fetch!(1))
     ])
   end
 
   defp schematic_from_data(data) when is_tuple(data) do
     Tuple.to_list(data)
     |> Enum.map(fn datum -> schematic_from_data(datum) |> Enum.fetch!(1) end)
-    |> Schematic.tuple()
+    |> SchematicV.tuple()
     |> StreamData.constant()
   end
 
@@ -152,11 +152,11 @@ defmodule SchematicTest.Generators do
       Enum.reduce(data, [], fn datum, acc ->
         [schematic_from_data(datum) |> Enum.fetch!(1) | acc]
       end)
-      |> Schematic.oneof()
-      |> Schematic.list()
+      |> SchematicV.oneof()
+      |> SchematicV.list()
 
     StreamData.member_of([
-      Schematic.list(),
+      SchematicV.list(),
       one_of_schematic
     ])
   end
@@ -171,21 +171,21 @@ defmodule SchematicTest.Generators do
         }
       end)
       |> then(fn {key_types, val_types} ->
-        [key_schematic: Schematic.oneof(key_types), value_schematic: Schematic.oneof(val_types)]
+        [key_schematic: SchematicV.oneof(key_types), value_schematic: SchematicV.oneof(val_types)]
       end)
-      |> Schematic.map()
+      |> SchematicV.map()
 
     blueprint =
       Enum.reduce(data, %{}, fn {datum_key, datum_value}, acc ->
         Map.put(acc, datum_key, schematic_from_data(datum_value) |> Enum.fetch!(1))
       end)
-      |> Schematic.map()
+      |> SchematicV.map()
 
     StreamData.member_of([schematic_options, blueprint])
   end
 
   @doc """
-  Generates non-compound data that has an analogous `Schematic` function. This excludes maps, lists, and tuples.
+  Generates non-compound data that has an analogous `SchematicV` function. This excludes maps, lists, and tuples.
   """
   def scalar() do
     StreamData.one_of([
@@ -208,37 +208,37 @@ defmodule SchematicTest.Generators do
 
   ## Options
 
-  * `:excluding` - a list of `Schematic.kind` values that should **not** be generated. Defaults to `[]`.
+  * `:excluding` - a list of `SchematicV.kind` values that should **not** be generated. Defaults to `[]`.
      * e.g. `["null", "int"]`
   """
   def simple_schematic(opts \\ []) do
     excluding = Keyword.get(opts, :excluding, [])
 
     [
-      Schematic.int(),
-      Schematic.float(),
-      Schematic.bool(),
-      Schematic.str(),
+      SchematicV.int(),
+      SchematicV.float(),
+      SchematicV.bool(),
+      SchematicV.str(),
       nil,
-      Schematic.tuple([]),
-      Schematic.list(),
-      Schematic.map(
-        key_schematic: Schematic.str(),
+      SchematicV.tuple([]),
+      SchematicV.list(),
+      SchematicV.map(
+        key_schematic: SchematicV.str(),
         value_schematic:
           StreamData.member_of([
-            Schematic.str(),
-            Schematic.int(),
-            Schematic.float(),
-            Schematic.bool(),
+            SchematicV.str(),
+            SchematicV.int(),
+            SchematicV.float(),
+            SchematicV.bool(),
             nil,
-            Schematic.tuple([]),
-            Schematic.list(),
-            Schematic.map()
+            SchematicV.tuple([]),
+            SchematicV.list(),
+            SchematicV.map()
           ])
       )
     ]
     |> Enum.filter(fn
-      %Schematic{kind: kind} ->
+      %SchematicV{kind: kind} ->
         kind not in excluding
 
       nil ->
@@ -254,7 +254,7 @@ defmodule SchematicTest.Generators do
   For generating more complex schematics with matching data, see `schematic_and_data/1`.
   """
   def from_simple_schematic(schematic) do
-    case Schematic.Unification.kind(schematic) do
+    case SchematicV.Unification.kind(schematic) do
       "integer" ->
         StreamData.integer()
 

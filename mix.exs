@@ -1,9 +1,9 @@
-defmodule Schematic.MixProject do
+defmodule SchematicV.MixProject do
   use Mix.Project
 
   def project do
     [
-      app: :schematic,
+      app: :schematic_v,
       description: "Data validation and transformation",
       package: package(),
       version: "0.4.0",
@@ -47,7 +47,7 @@ defmodule Schematic.MixProject do
 
   defp docs() do
     [
-      main: "Schematic"
+      main: "SchematicV"
     ]
   end
 end
