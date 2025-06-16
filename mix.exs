@@ -39,7 +39,7 @@ defmodule SchematicV.MixProject do
 
   defp deps do
     [
-      {:telemetry, "~> 0.4 or ~> 1.0"},
+      # {:telemetry, "~> 0.4 or ~> 1.0"},
       {:ex_doc, ">= 0.0.0", only: :dev, runtime: false},
       {:stream_data, "~> 1.1", only: [:dev, :test], runtime: false}
     ]
