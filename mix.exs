@@ -1,9 +1,9 @@
-defmodule Schematic.MixProject do
+defmodule SchematicV.MixProject do
   use Mix.Project
 
   def project do
     [
-      app: :schematic,
+      app: :schematic_v,
       description: "Data validation and transformation",
       package: package(),
       version: "0.5.1",
@@ -39,7 +39,7 @@ defmodule Schematic.MixProject do
 
   defp deps do
     [
-      {:telemetry, "~> 0.4 or ~> 1.0"},
+      # {:telemetry, "~> 0.4 or ~> 1.0"},
       {:ex_doc, ">= 0.0.0", only: :dev, runtime: false},
       {:stream_data, "~> 1.1", only: [:dev, :test], runtime: false}
     ]
@@ -47,7 +47,7 @@ defmodule Schematic.MixProject do
 
   defp docs() do
     [
-      main: "Schematic"
+      main: "SchematicV"
     ]
   end
 end

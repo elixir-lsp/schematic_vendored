@@ -1,10 +1,10 @@
-defmodule SchematicTest do
+defmodule SchematicVTest do
   use ExUnit.Case, async: true
 
   import ExUnitProperties, only: :macros
-  import Schematic
+  import SchematicV
 
-  alias SchematicTest.Generators
+  alias SchematicVTest.Generators
 
   defmodule Request do
     defstruct [:jsonrpc, :method, :params, :id]
@@ -15,7 +15,7 @@ defmodule SchematicTest do
   end
 
   unless Version.match?(System.version(), "~> 1.11.0 or ~> 1.10.0") do
-    doctest Schematic, tags: [doctest: true]
+    doctest SchematicV, tags: [doctest: true]
   end
 
   describe "unify" do
@@ -649,26 +649,26 @@ defmodule SchematicTest do
     end
 
     test "works with schema" do
-      schematic = schema(SchematicTest.S3, %{baz: schema(SchematicTest.S4, %{one: str()})})
+      schematic = schema(SchematicVTest.S3, %{baz: schema(SchematicVTest.S4, %{one: str()})})
 
-      assert {:ok, %SchematicTest.S3{baz: %SchematicTest.S4{one: "yo"}}} ==
+      assert {:ok, %SchematicVTest.S3{baz: %SchematicVTest.S4{one: "yo"}}} ==
                unify(schematic, %{"baz" => %{"one" => "yo"}})
 
       assert {:ok, %{"baz" => %{"one" => "yo"}}} ==
-               dump(schematic, %SchematicTest.S3{baz: %SchematicTest.S4{one: "yo"}})
+               dump(schematic, %SchematicVTest.S3{baz: %SchematicVTest.S4{one: "yo"}})
     end
 
     test "works with schema, convert: false" do
       schematic =
-        schema(SchematicTest.S3, %{baz: schema(SchematicTest.S4, %{one: str()}, convert: false)},
+        schema(SchematicVTest.S3, %{baz: schema(SchematicVTest.S4, %{one: str()}, convert: false)},
           convert: false
         )
 
-      assert {:ok, %SchematicTest.S3{baz: %SchematicTest.S4{one: "yo"}}} ==
+      assert {:ok, %SchematicVTest.S3{baz: %SchematicVTest.S4{one: "yo"}}} ==
                unify(schematic, %{baz: %{one: "yo"}})
 
       assert {:ok, %{baz: %{one: "yo"}}} ==
-               dump(schematic, %SchematicTest.S3{baz: %SchematicTest.S4{one: "yo"}})
+               dump(schematic, %SchematicVTest.S3{baz: %SchematicVTest.S4{one: "yo"}})
     end
 
     test "works with oneof" do
@@ -783,21 +783,21 @@ defmodule SchematicTest do
   describe "optional keys on schemas" do
     test "will omit optional key when dumping" do
       schematic =
-        schema(SchematicTest.OptionalSchema, %{
+        schema(SchematicVTest.OptionalSchema, %{
           optional(:optional) => str(),
           required: str()
         })
 
-      assert {:ok, %SchematicTest.OptionalSchema{required: "foo!"}} ==
+      assert {:ok, %SchematicVTest.OptionalSchema{required: "foo!"}} ==
                unify(schematic, %{"required" => "foo!"})
 
       assert {:ok, %{"required" => "foo!"}} ==
-               dump(schematic, %SchematicTest.OptionalSchema{required: "foo!"})
+               dump(schematic, %SchematicVTest.OptionalSchema{required: "foo!"})
     end
   end
 
   defmodule Recursive do
-    import Schematic
+    import SchematicV
 
     def foo() do
       map(%{
@@ -917,7 +917,7 @@ defmodule SchematicTest do
              map(keys: str(), values: str())
              """
              |> Code.format_string!()
-             |> IO.iodata_to_binary() == Inspect.Schematic.inspect(schematic, [])
+             |> IO.iodata_to_binary() == Inspect.SchematicV.inspect(schematic, [])
     end
   end
 end

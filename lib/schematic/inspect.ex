@@ -1,10 +1,10 @@
-defimpl Inspect, for: Schematic do
+defimpl Inspect, for: SchematicV do
   def inspect(schematic, opts) do
     schematic.inspect.(nil, opts) |> Code.format_string!() |> IO.iodata_to_binary()
   end
 end
 
-defimpl Inspect, for: Schematic.OptionalKey do
+defimpl Inspect, for: SchematicV.OptionalKey do
   def inspect(optional_key, _opts) do
     default =
       if optional_key.default do

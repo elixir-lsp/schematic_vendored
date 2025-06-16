@@ -1,6 +1,6 @@
-defmodule SchematicTest.Bookstore do
+defmodule SchematicVTest.Bookstore do
   defmodule Datetime do
-    import Schematic
+    import SchematicV
 
     def schematic() do
       raw(
@@ -21,7 +21,7 @@ defmodule SchematicTest.Bookstore do
   end
 
   defmodule Author do
-    import Schematic
+    import SchematicV
 
     defstruct [:name]
 
@@ -33,33 +33,33 @@ defmodule SchematicTest.Bookstore do
   end
 
   defmodule Book do
-    import Schematic
+    import SchematicV
 
     defstruct [:title, :authors, :publication_date]
 
     def schematic() do
       schema(__MODULE__, %{
-        {"publicationDate", :publication_date} => SchematicTest.Bookstore.Datetime.schematic(),
+        {"publicationDate", :publication_date} => SchematicVTest.Bookstore.Datetime.schematic(),
         title: str(),
-        authors: list(SchematicTest.Bookstore.Author.schematic())
+        authors: list(SchematicVTest.Bookstore.Author.schematic())
       })
     end
   end
 
   defmodule BooksListResult do
-    import Schematic
+    import SchematicV
 
     defstruct [:books]
 
     def schematic() do
       schema(__MODULE__, %{
-        books: list(SchematicTest.Bookstore.Book.schematic())
+        books: list(SchematicVTest.Bookstore.Book.schematic())
       })
     end
   end
 
   defmodule BooksListParams do
-    import Schematic
+    import SchematicV
 
     defstruct [:query, :order]
 
@@ -78,7 +78,7 @@ defmodule SchematicTest.Bookstore do
   end
 
   defmodule BooksList do
-    import Schematic
+    import SchematicV
 
     defstruct [:id, :method, :params]
 
@@ -86,7 +86,7 @@ defmodule SchematicTest.Bookstore do
       schema(__MODULE__, %{
         id: int(),
         method: "books/list",
-        params: SchematicTest.Bookstore.BooksListParams.schematic()
+        params: SchematicVTest.Bookstore.BooksListParams.schematic()
       })
     end
   end

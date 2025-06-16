@@ -1,4 +1,4 @@
-defmodule Schematic do
+defmodule SchematicV do
   @external_resource "README.md"
   @moduledoc "README.md"
              |> File.read!()
@@ -9,7 +9,7 @@ defmodule Schematic do
   defstruct [:unify, :kind, :message, :meta, :inspect]
 
   @typedoc """
-  The Schematic data structure.
+  The SchematicV data structure.
 
   This data structure is meant to be opaque to the user, but you can create your own for super niche use cases. But backwards compatiblility of this data structure is not guaranteed.
   """
@@ -66,7 +66,7 @@ defmodule Schematic do
   """
   @spec any() :: t()
   def any() do
-    %Schematic{
+    %SchematicV{
       kind: "any",
       inspect: fn _, _ ->
         "any()"
@@ -125,7 +125,7 @@ defmodule Schematic do
       "a boolean"
     end
 
-    %Schematic{
+    %SchematicV{
       kind: "boolean",
       message: message,
       inspect: fn _, _ ->
@@ -169,7 +169,7 @@ defmodule Schematic do
       "a string"
     end
 
-    %Schematic{
+    %SchematicV{
       kind: "string",
       message: message,
       inspect: fn _, _ ->
@@ -203,7 +203,7 @@ defmodule Schematic do
   def atom() do
     message = fn -> "an atom" end
 
-    %Schematic{
+    %SchematicV{
       kind: "atom",
       message: message,
       inspect: fn _, _ ->
@@ -247,7 +247,7 @@ defmodule Schematic do
       "an integer"
     end
 
-    %Schematic{
+    %SchematicV{
       kind: "integer",
       message: message,
       inspect: fn _, _ ->
@@ -291,7 +291,7 @@ defmodule Schematic do
       "a float"
     end
 
-    %Schematic{
+    %SchematicV{
       kind: "float",
       message: message,
       inspect: fn _, _ ->
@@ -323,7 +323,7 @@ defmodule Schematic do
   def list() do
     message = fn -> "a list" end
 
-    %Schematic{
+    %SchematicV{
       kind: "list",
       message: message,
       inspect: fn _, _ ->
@@ -367,7 +367,7 @@ defmodule Schematic do
 
     message = fn -> "a list of #{schematic.().message.()}" end
 
-    %Schematic{
+    %SchematicV{
       kind: "list",
       message: message,
       inspect: fn _, _ ->
@@ -422,7 +422,7 @@ defmodule Schematic do
     from = Keyword.get(opts, :from, :tuple)
 
     message = fn ->
-      "a #{from} of {#{Enum.map_join(schematics, ", ", &Schematic.Unification.message/1)}}"
+      "a #{from} of {#{Enum.map_join(schematics, ", ", &SchematicV.Unification.message/1)}}"
     end
 
     {condition, to_list, length} =
@@ -434,7 +434,7 @@ defmodule Schematic do
           {&is_tuple/1, &Tuple.to_list/1, &tuple_size/1}
       end
 
-    %Schematic{
+    %SchematicV{
       kind: "tuple",
       message: message,
       inspect: fn _, _ ->
@@ -446,7 +446,7 @@ defmodule Schematic do
           |> to_list.()
           |> Enum.with_index()
           |> Enum.reduce_while({:ok, []}, fn {el, idx}, {:ok, acc} ->
-            case Schematic.Unification.unify(Enum.at(schematics, idx), el, dir) do
+            case SchematicV.Unification.unify(Enum.at(schematics, idx), el, dir) do
               {:ok, output} ->
                 {:cont, {:ok, [output | acc]}}
 
@@ -473,7 +473,7 @@ defmodule Schematic do
       "a keyword list"
     end
 
-    %Schematic{
+    %SchematicV{
       kind: "keyword",
       message: message,
       inspect: fn _, _ ->
@@ -575,7 +575,7 @@ defmodule Schematic do
   iex> {:error, [quantity: "expected either a string or an integer"]} = unify(schematic, [type: "big", quantity: [99]])
   ```
 
-  ## Recursive Schematics
+  ## Recursive SchematicVs
 
   See `map/1` for more information on recursive schematics
   """
@@ -583,7 +583,7 @@ defmodule Schematic do
   def keyword(blueprint_or_opts)
 
   def keyword(blueprint) when is_map(blueprint) do
-    %Schematic{
+    %SchematicV{
       kind: "keyword list",
       message: fn -> "a keyword list" end,
       inspect: fn _, _ ->
@@ -636,7 +636,7 @@ defmodule Schematic do
 
                   key = with %OptionalKey{key: key} <- bpk, do: key
 
-                  case Schematic.Unification.unify(schematic, input_value, dir) do
+                  case SchematicV.Unification.unify(schematic, input_value, dir) do
                     {:ok, output} ->
                       acc = [{key, output} | acc]
 
@@ -680,7 +680,7 @@ defmodule Schematic do
   def keyword(opts) when is_list(opts) do
     value_schematic = Keyword.get(opts, :values, any())
 
-    %Schematic{
+    %SchematicV{
       kind: "keyword list",
       message: fn -> "a keyword list" end,
       inspect: fn _, _ ->
@@ -700,7 +700,7 @@ defmodule Schematic do
               Keyword.keys(input),
               [ok: [], errors: []],
               fn input_key, [{:ok, acc}, {:errors, errors}] ->
-                case Schematic.Unification.unify(atom(), input_key, dir) do
+                case SchematicV.Unification.unify(atom(), input_key, dir) do
                   {:ok, key_output} ->
                     for value <- Keyword.get_values(input, key_output),
                         reduce: [ok: acc, errors: errors] do
@@ -839,7 +839,7 @@ defmodule Schematic do
   iex> {:ok, %{"teamName" => "Chicago Bulls"}} = dump(schematic, %{team_name: "Chicago Bulls"})
   ```
 
-  ## Recursive Schematics
+  ## Recursive SchematicVs
 
   One can define schematics that specify keys whose values are themselves.
 
@@ -849,7 +849,7 @@ defmodule Schematic do
 
   ```elixir
   iex> defmodule Tree do
-  ...>   import Schematic
+  ...>   import SchematicV
   ...>
   ...>   def schematic() do
   ...>     map(%{values: list(Tree.branch())})
@@ -890,7 +890,7 @@ defmodule Schematic do
   ...>     }
   ...>   ]
   ...> }
-  iex> unify(SchematicTest.Tree.schematic(), input)
+  iex> unify(SchematicVTest.Tree.schematic(), input)
   {:ok, %{values: [%{values: [%{value: "i'm a leaf"}, %{values: [%{value: "i'm another leaf"}]}]}]}}
   ```
   """
@@ -910,7 +910,7 @@ defmodule Schematic do
   def map(blueprint_or_opts \\ [])
 
   def map(blueprint) when is_map(blueprint) do
-    %Schematic{
+    %SchematicV{
       kind: "map",
       inspect: fn _, _ ->
         """
@@ -963,7 +963,7 @@ defmodule Schematic do
                       [{:ok, acc}, {:errors, Map.put(errors, from_key, "is missing")}]
 
                     {:ok, value} ->
-                      case Schematic.Unification.unify(schematic, value, dir) do
+                      case SchematicV.Unification.unify(schematic, value, dir) do
                         {:ok, output} ->
                           acc = Map.put(acc, to_key, output)
 
@@ -1000,7 +1000,7 @@ defmodule Schematic do
     key_schematic = Keyword.get(opts, :keys, any())
     value_schematic = Keyword.get(opts, :values, any())
 
-    %Schematic{
+    %SchematicV{
       kind: "map",
       inspect: fn _, _ ->
         opt_strings =
@@ -1126,7 +1126,7 @@ defmodule Schematic do
         end)
       )
 
-    %Schematic{
+    %SchematicV{
       kind: "#{mod}",
       message: fn -> "a %#{String.replace(inspect(mod), "Elixir.", "")}{}" end,
       inspect: fn _, _ ->
@@ -1207,7 +1207,7 @@ defmodule Schematic do
     message = fn -> Keyword.get(opts, :message, "is invalid") end
     transformer = Keyword.get(opts, :transform, fn input, _dir -> input end)
 
-    %Schematic{
+    %SchematicV{
       kind: "function",
       inspect: fn _, _ ->
         "raw(\"fn\")"
@@ -1250,7 +1250,7 @@ defmodule Schematic do
   def all(schematics) when is_list(schematics) do
     message = fn -> Enum.map(schematics, & &1.message) end
 
-    %Schematic{
+    %SchematicV{
       kind: "all",
       message: message,
       inspect: fn _, _ ->
@@ -1261,7 +1261,7 @@ defmodule Schematic do
           errors =
             for schematic <- schematics,
                 {result, message} =
-                  __try__(fn -> Schematic.Unification.unify(schematic, input, dir) end),
+                  __try__(fn -> SchematicV.Unification.unify(schematic, input, dir) end),
                 result == :error do
               message
             end
@@ -1318,10 +1318,10 @@ defmodule Schematic do
   @spec oneof([t() | lazy_schematic() | literal()] | (any -> t() | literal())) :: t()
   def oneof(schematics) when is_list(schematics) do
     message = fn ->
-      "either #{sentence_join(schematics, "or", &Schematic.Unification.message/1)}"
+      "either #{sentence_join(schematics, "or", &SchematicV.Unification.message/1)}"
     end
 
-    %Schematic{
+    %SchematicV{
       kind: "oneof",
       message: message,
       inspect: fn _, _ ->
@@ -1337,7 +1337,7 @@ defmodule Schematic do
                   schematic -> schematic
                 end
 
-              with {:error, _} <- Schematic.Unification.unify(schematic, input, dir), do: false
+              with {:error, _} <- SchematicV.Unification.unify(schematic, input, dir), do: false
             end)
 
           with nil <- inquiry, do: {:error, ~s|expected #{message.()}|}
@@ -1346,15 +1346,15 @@ defmodule Schematic do
   end
 
   def oneof(dispatch) when is_function(dispatch) do
-    %Schematic{
+    %SchematicV{
       kind: "oneof:dispatch",
       inspect: fn _, _ ->
         "oneof(fn)"
       end,
       unify:
         telemetry_wrap(:oneof, %{style: :dispatch}, fn input, dir ->
-          with %Schematic{} = schematic <- dispatch.(input) do
-            Schematic.Unification.unify(schematic, input, dir)
+          with %SchematicV{} = schematic <- dispatch.(input) do
+            SchematicV.Unification.unify(schematic, input, dir)
           end
         end)
     }
@@ -1376,7 +1376,7 @@ defmodule Schematic do
   """
   @spec unify(t() | literal(), any()) :: any()
   def unify(schematic, input) do
-    Schematic.Unification.unify(schematic, input, :to)
+    SchematicV.Unification.unify(schematic, input, :to)
   end
 
   @doc """
@@ -1386,17 +1386,18 @@ defmodule Schematic do
   """
   @spec dump(t() | literal(), any()) :: any()
   def dump(schematic, input) do
-    Schematic.Unification.unify(schematic, input, :from)
+    SchematicV.Unification.unify(schematic, input, :from)
   end
 
-  defp telemetry_wrap(type, metadata, func) do
+  defp telemetry_wrap(_type, _metadata, func) do
     fn input, dir ->
-      metadata = Map.merge(%{kind: type, dir: dir}, metadata)
+      func.(input, dir)
+      # metadata = Map.merge(%{kind: type, dir: dir}, metadata)
 
-      :telemetry.span([:schematic, :unify], metadata, fn ->
-        result = func.(input, dir)
-        {result, metadata}
-      end)
+      # :telemetry.span([:schematic_v, :unify], metadata, fn ->
+      #   result = func.(input, dir)
+      #   {result, metadata}
+      # end)
     end
   end
 
